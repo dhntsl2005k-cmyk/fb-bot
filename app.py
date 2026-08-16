@@ -949,8 +949,13 @@ def telegram_bot_polling():
 
             time.sleep(1)
         except Exception as e:
-            add_log(f"Lỗi Telegram polling: {e}", 'error')
-            time.sleep(4)
+            err_str = str(e)
+            if '409' in err_str or 'Conflict' in err_str:
+                add_log("⚠️ Phát hiện xung đột polling (409), chờ 6s để đồng bộ...", 'warning')
+                time.sleep(6)
+            else:
+                add_log(f"Lỗi Telegram polling: {e}", 'error')
+                time.sleep(4)
 
 # ============================================================
 # FLASK WEB SERVER (CHO RENDER & UPTIMEROBOT 24/7)
@@ -976,9 +981,19 @@ def api_status():
         'logs_count': len(logs)
     })
 
-# Khởi chạy luồng Telegram Bot khi chạy app
-bot_thread = threading.Thread(target=telegram_bot_polling, daemon=True)
-bot_thread.start()
+# Khởi chạy luồng Telegram Bot an toàn (Đơn luồng)
+bot_started_lock = threading.Lock()
+bot_started = False
+
+def start_background_bot():
+    global bot_started
+    with bot_started_lock:
+        if not bot_started:
+            bot_started = True
+            t = threading.Thread(target=telegram_bot_polling, daemon=True)
+            t.start()
+
+start_background_bot()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
