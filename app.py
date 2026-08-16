@@ -70,9 +70,23 @@ def get_mongo_db():
         return None
     try:
         import pymongo
-        mongo_client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        client_kwargs = {
+            'serverSelectionTimeoutMS': 5000,
+            'connectTimeoutMS': 5000,
+            'socketTimeoutMS': 5000,
+            'retryWrites': True
+        }
+        try:
+            import certifi
+            client_kwargs['tlsCAFile'] = certifi.where()
+            client_kwargs['tlsAllowInvalidCertificates'] = True
+        except Exception:
+            client_kwargs['tlsAllowInvalidCertificates'] = True
+
+        mongo_client = pymongo.MongoClient(MONGO_URI, **client_kwargs)
         mongo_client.admin.command('ping')
         mongo_db = mongo_client['fb_live_monitor']
+        add_log("✅ Kết nối MongoDB Atlas Cloud thành công!", 'success')
         return mongo_db
     except Exception as e:
         try:
