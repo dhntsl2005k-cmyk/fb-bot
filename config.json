@@ -1,0 +1,13 @@
+{
+  "telegram_bot_token": "8721648395:AAGF8exgEWC-WqWIS7UWxwCRNm0nWgegXGg",
+  "telegram_chat_id": "1445809720",
+  "cf_worker_url": "https://fb-live-scanner.dhntsl2004k.workers.dev",
+  "check_interval": 60,
+  "use_proxy_pool": true,
+  "allowed_users": {
+    "1445809720": "permanent"
+  },
+  "users": {
+    "1445809720": []
+  }
+}
